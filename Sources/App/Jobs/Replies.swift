@@ -6,8 +6,10 @@ import Vapor
 struct ReplyJob: AsyncScheduledJob {
     func run(context: QueueContext) async throws {
         let users = try await User.query(on: context.application.db).all()
+        print(users.count)
         await withTaskGroup(of: Bool.self) { group in
             for user in users {
+                print(user.deviceToken)
                 group.addTask {
                     do {
                         let response = try await context.application.client.get("\(user.instance)/api/v3/user/replies?auth=\(user.id!)")
