@@ -2,9 +2,8 @@ import APNS
 import Fluent
 import FluentPostgresDriver
 import NIOSSL
-import Vapor
 import QueuesRedisDriver
-
+import Vapor
 
 // configures your application
 public func configure(_ app: Application) async throws {
@@ -22,18 +21,18 @@ public func configure(_ app: Application) async throws {
     ), as: .psql)
 
     app.migrations.add(CreateUser())
-    
+
     try app.queues.use(.redis(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379"))
-    
+
     let decoder = JSONDecoder()
     let formatter1 = DateFormatter()
     formatter1.locale = Locale(identifier: "en_US_POSIX")
-    formatter1.timeZone = TimeZone(identifier:"GMT")
+    formatter1.timeZone = TimeZone(identifier: "GMT")
     formatter1.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
 
     let formatter2 = DateFormatter()
     formatter2.locale = Locale(identifier: "en_US_POSIX")
-    formatter2.timeZone = TimeZone(identifier:"GMT")
+    formatter2.timeZone = TimeZone(identifier: "GMT")
     formatter2.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
     decoder.dateDecodingStrategy = .custom { decoder -> Date in
         let container = try decoder.singleValueContainer()
@@ -49,9 +48,9 @@ public func configure(_ app: Application) async throws {
         }
         return date_
     }
-    
+
     ContentConfiguration.global.use(decoder: decoder, for: .json)
-    
+
     app.queues.schedule(ReplyJob())
         .minutely()
         .at(0)
@@ -64,7 +63,7 @@ public func configure(_ app: Application) async throws {
             teamIdentifier: "2GA3QKMF6Y"
         ),
         topic: "com.axlav.lemmios",
-        environment: .sandbox
+        environment: app.environment == .development ? .sandbox : .production
     )
 
     // register routes
