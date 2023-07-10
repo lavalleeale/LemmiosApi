@@ -4,11 +4,14 @@ import Vapor
 final class User: Fields, Model {
     static let schema = "users"
     
-    @ID(custom: "deviceToken", generatedBy: .user)
+    @ID(custom: "jwt", generatedBy: .user)
     var id: String?
+    
+    @Field(key: "username")
+    var username: String
 
-    @Field(key: "jwt")
-    var jwt: String
+    @Field(key: "deviceToken")
+    var deviceToken: String
     
     @Field(key: "instance")
     var instance: String
@@ -18,9 +21,10 @@ final class User: Fields, Model {
 
     init() { }
 
-    init(deviceToken: String, jwt: String, instance: String, lastChecked: Date) {
-        self.id = deviceToken
-        self.jwt = jwt
+    init(deviceToken: String, jwt: String, username: String, instance: String, lastChecked: Date) {
+        self.id = jwt
+        self.deviceToken = deviceToken
+        self.username = username
         self.instance = instance
         self.lastChecked = lastChecked
     }

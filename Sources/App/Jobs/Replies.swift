@@ -10,7 +10,7 @@ struct ReplyJob: AsyncScheduledJob {
             for user in users {
                 group.addTask {
                     do {
-                        let response = try await context.application.client.get("\(user.instance)/api/v3/user/replies?auth=\(user.jwt)")
+                        let response = try await context.application.client.get("\(user.instance)/api/v3/user/replies?auth=\(user.id!)")
                         switch response.status {
                         case .badRequest:
                             try await user.delete(on: context.application.db)
@@ -21,14 +21,14 @@ struct ReplyJob: AsyncScheduledJob {
                             }
                             user.lastChecked = .now
                             try await user.update(on: context.application.db)
-                            let response = try await context.application.client.get("\(user.instance)/api/v3/user/unread_count?auth=\(user.jwt)")
+                            let response = try await context.application.client.get("\(user.instance)/api/v3/user/unread_count?auth=\(user.id!)")
                             if let replyCount = try? response.content.decode(UnreadCount.self).replies {
-                                _ = context.application.apns.send(APNSwiftPayload(badge: replyCount), to: user.id!)
+                                _ = context.application.apns.send(APNSwiftPayload(badge: replyCount), to: user.deviceToken)
                             }
                             for reply in replies {
                                 _ = context.application.apns.send(
                                     APNSwiftPayload(alert: .init(title: "New reply from \(reply.creator.name)", subtitle: reply.comment.content)),
-                                    to: user.id!
+                                    to: user.deviceToken
                                 )
                             }
                         default:
