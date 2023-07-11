@@ -6,44 +6,63 @@ import Vapor
 struct ReplyJob: AsyncScheduledJob {
     func run(context: QueueContext) async throws {
         let users = try await User.query(on: context.application.db).all()
+        try await User.query(on: context.application.db)
+            .set(\.$lastChecked, to: .now)
+            .update()
         print(users.count)
-        await withTaskGroup(of: Bool.self) { group in
+        try await withThrowingTaskGroup(of: Bool.self) { group in
             for user in users {
-                print(user.deviceToken)
+                print(user.username)
                 group.addTask {
-                    do {
-                        let response = try await context.application.client.get("\(user.instance)/api/v3/user/replies?auth=\(user.id!)")
-                        switch response.status {
-                        case .badRequest:
-                            try await user.delete(on: context.application.db)
-                        case .ok:
-                            let replies = try response.content.decode(Replies.self).replies.filter { $0.comment.published > user.lastChecked }
-                            if replies.isEmpty {
-                                return false
-                            }
-                            user.lastChecked = .now
-                            try await user.update(on: context.application.db)
-                            let response = try await context.application.client.get("\(user.instance)/api/v3/user/unread_count?auth=\(user.id!)")
-                            if let replyCount = try? response.content.decode(UnreadCount.self).replies {
-                                _ = context.application.apns.send(APNSwiftPayload(badge: replyCount), to: user.deviceToken)
-                            }
-                            for reply in replies {
-                                _ = context.application.apns.send(
-                                    APNSwiftPayload(alert: .init(title: "New reply from \(reply.creator.name)", subtitle: reply.comment.content)),
-                                    to: user.deviceToken
-                                )
-                            }
-                        default:
+                    let countResponse = try await context.application.client.get("\(user.instance)/api/v3/user/unread_count?auth=\(user.id!)")
+                    switch countResponse.status {
+                    case .badRequest:
+                        try await user.delete(on: context.application.db)
+                    case .ok:
+                        guard let replyCount = try? countResponse.content.decode(UnreadCount.self) else {
                             return false
                         }
-                    } catch {
-                        print(error)
+                        let total = replyCount.replies + replyCount.private_messages
+                        if total != 0 {
+                            _ = context.application.apns.send(APNSwiftPayload(badge: total), to: user.deviceToken)
+                        }
+                        if replyCount.replies != 0 {
+                            let repliesResponse = try await context.application.client.get("\(user.instance)/api/v3/user/replies?auth=\(user.id!)")
+                            guard repliesResponse.status == .ok else {
+                                return false
+                            }
+                            if let replies = try? repliesResponse.content.decode(Replies.self).replies.filter({ $0.comment.published > user.lastChecked }) {
+                                for reply in replies {
+                                    _ = context.application.apns.send(
+                                        APNSwiftPayload(alert: .init(title: "New reply from \(reply.creator.name)", subtitle: reply.comment.content)),
+                                        to: user.deviceToken
+                                    )
+                                }
+                            }
+                        }
+                        if replyCount.private_messages != 0 {
+                            let messagesResponse = try await context.application.client.get("\(user.instance)/api/v3/private_message/list?auth=\(user.id!)")
+                            guard messagesResponse.status == .ok else {
+                                return false
+                            }
+                            if let messages = try? messagesResponse.content.decode(Messages.self).private_messages.filter({ $0.private_message.published > user.lastChecked }) {
+                                for message in messages {
+                                    _ = context.application.apns.send(
+                                        APNSwiftPayload(alert: .init(title: "New message from \(message.creator.name)", subtitle: message.private_message.content)),
+                                        to: user.deviceToken
+                                    )
+                                }
+                            }
+                        }
+                    default:
+                        return false
                     }
                     return true
                 }
             }
-            await group.waitForAll()
+            try await group.waitForAll()
         }
+        print(Date.now)
     }
 }
 
@@ -65,10 +84,22 @@ struct Reply: Codable {
 struct Comment: Codable {
     let content: String
     let published: Date
-    let id: Int
 }
 
 struct UserData: Codable {
     let name: String
-    let id: Int
+}
+
+struct Messages: Codable {
+    let private_messages: [Message]
+}
+
+struct Message: Codable {
+    let creator: UserData
+    var private_message: MessageContent
+}
+
+struct MessageContent: Codable {
+    let content: String
+    let published: Date
 }

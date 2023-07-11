@@ -54,7 +54,6 @@ public func configure(_ app: Application) async throws {
     app.queues.schedule(ReplyJob())
         .minutely()
         .at(0)
-
     let pemData = Environment.get("PEM_DATA")
     app.apns.configuration = try .init(
         authenticationMethod: .jwt(
