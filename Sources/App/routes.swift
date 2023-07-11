@@ -5,6 +5,18 @@ func routes(_ app: Application) throws {
     app.get { _ async in
         "It works!"
     }
+    
+    app.get("status") { req async throws in
+        let registerPayload = try req.query.decode(InfoPayload.self)
+        let user = try await User.query(on: req.db)
+            .filter(\.$id == registerPayload.auth)
+            .first()
+        if let user = user {
+            return user
+        } else {
+            throw Abort(.notFound)
+        }
+    }
 
     app.post("register") { req async throws in
         let registerPayload = try req.content.decode(RegisterPayload.self)
@@ -49,6 +61,10 @@ func routes(_ app: Application) throws {
             .delete()
         return ""
     }
+}
+
+struct InfoPayload: Codable {
+    let auth: String
 }
 
 struct SiteInfo: Codable {

@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class User: Fields, Model {
+final class User: Fields, Model, Content {
     static let schema = "users"
     
     @ID(custom: "jwt", generatedBy: .user)
