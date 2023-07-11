@@ -17,7 +17,9 @@ struct ReplyJob: AsyncScheduledJob {
                     let countResponse = try await context.application.client.get("\(user.instance)/api/v3/user/unread_count?auth=\(user.id!)")
                     switch countResponse.status {
                     case .badRequest:
-                        try await user.delete(on: context.application.db)
+                        if let errorData = try? countResponse.content.decode(ErrorData.self), errorData.error == "not_logged_in" {
+                            try await user.delete(on: context.application.db)
+                        }
                     case .ok:
                         guard let replyCount = try? countResponse.content.decode(UnreadCount.self) else {
                             return false
@@ -64,6 +66,10 @@ struct ReplyJob: AsyncScheduledJob {
         }
         print(Date.now)
     }
+}
+
+struct ErrorData: Codable {
+    let error: String
 }
 
 struct UnreadCount: Codable {
