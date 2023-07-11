@@ -18,6 +18,7 @@ struct ReplyJob: AsyncScheduledJob {
                     switch countResponse.status {
                     case .badRequest:
                         if let errorData = try? countResponse.content.decode(ErrorData.self), errorData.error == "not_logged_in" {
+                            print(errorData, user.username)
                             try await user.delete(on: context.application.db)
                         }
                     case .ok:
