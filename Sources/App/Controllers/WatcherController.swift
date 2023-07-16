@@ -1,7 +1,7 @@
 import Foundation
 import Vapor
 import LemmyApi
-import Combine
+import CXShim
 
 struct WatcherController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {

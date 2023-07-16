@@ -37,12 +37,30 @@
       }
     },
     {
+      "identity" : "combinex",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lavalleeale/CombineX",
+      "state" : {
+        "branch" : "master",
+        "revision" : "bb5ff98aff5db119c5a1075c63204fab3612a648"
+      }
+    },
+    {
       "identity" : "console-kit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/console-kit.git",
       "state" : {
         "revision" : "447f1046fb4e9df40973fe426ecb24a6f0e8d3b4",
         "version" : "4.6.0"
+      }
+    },
+    {
+      "identity" : "cxshim",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cx-org/CXShim",
+      "state" : {
+        "revision" : "82fecc246c7ca9f0ac1656b8199b7956e64d68f3",
+        "version" : "0.4.0"
       }
     },
     {
@@ -87,7 +105,7 @@
       "location" : "https://github.com/lavalleeale/LemmyApi.git",
       "state" : {
         "branch" : "main",
-        "revision" : "ca49b5c7a198e88c2725a3a60ef46a939de86f1d"
+        "revision" : "41fd0ca1c67103ee76c1431390fcb48a02e4ea12"
       }
     },
     {
