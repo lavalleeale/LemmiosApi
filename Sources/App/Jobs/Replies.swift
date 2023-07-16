@@ -1,5 +1,7 @@
 import APNS
+import Combine
 import Foundation
+import LemmyApi
 import Queues
 import Vapor
 
@@ -14,52 +16,60 @@ struct ReplyJob: AsyncScheduledJob {
             for user in users {
                 print(user.username)
                 group.addTask {
-                    let countResponse = try await context.application.client.get("\(user.instance)/api/v3/user/unread_count?auth=\(user.id!)")
-                    switch countResponse.status {
-                    case .badRequest:
-                        if let errorData = try? countResponse.content.decode(ErrorData.self), errorData.error == "not_logged_in" {
-                            print(errorData, user.username)
+                    var cancellable = Set<AnyCancellable>()
+                    let lemmyApi = try! LemmyApi(baseUrl: user.instance)
+                    lemmyApi.setJwt(jwt: user.id!)
+                    let (countResponse, error) = await withCheckedContinuation { continuation in
+                        lemmyApi.getUnreadCount { unread, error in
+                            continuation.resume(returning: (unread, error))
+                        }.store(in: &cancellable)
+                    }
+                    if let error = error {
+                        if case .lemmyError(let message) = error {
+                            print(error, message)
 //                            try await user.delete(on: context.application.db)
                         }
-                    case .ok:
-                        guard let replyCount = try? countResponse.content.decode(UnreadCount.self) else {
-                            return false
-                        }
-                        let total = replyCount.replies + replyCount.private_messages
+                    } else if let countResponse = countResponse {
+                        let total = countResponse.replies + countResponse.private_messages
                         if total != 0 {
                             _ = context.application.apns.send(APNSwiftPayload(badge: total), to: user.deviceToken)
                         }
-                        if replyCount.replies != 0 {
-                            let repliesResponse = try await context.application.client.get("\(user.instance)/api/v3/user/replies?auth=\(user.id!)")
-                            guard repliesResponse.status == .ok else {
+                        if countResponse.replies != 0 {
+                            let (repliesResponse, error) = await withCheckedContinuation { continuation in
+                                lemmyApi.getReplies(page: 1, sort: LemmyApi.Sort.New, unread: true) { replies, error in
+                                    continuation.resume(returning: (replies, error))
+                                }.store(in: &cancellable)
+                            }
+                            guard let repliesResponse = repliesResponse else {
                                 return false
                             }
-                            if let replies = try? repliesResponse.content.decode(Replies.self).replies.filter({ $0.comment.published > user.lastChecked }) {
-                                for reply in replies {
-                                    _ = context.application.apns.send(
-                                        APNSwiftPayload(alert: .init(title: "New reply from \(reply.creator.name)", subtitle: reply.comment.content)),
-                                        to: user.deviceToken
-                                    )
-                                }
+                            let replies = repliesResponse.replies.filter { $0.counts.published > user.lastChecked }
+                            for reply in replies {
+                                _ = context.application.apns.send(
+                                    APNSwiftPayload(alert: .init(title: "New reply from \(reply.creator.name)", subtitle: reply.comment.content)),
+                                    to: user.deviceToken
+                                )
                             }
                         }
-                        if replyCount.private_messages != 0 {
-                            let messagesResponse = try await context.application.client.get("\(user.instance)/api/v3/private_message/list?auth=\(user.id!)")
-                            guard messagesResponse.status == .ok else {
+                        if countResponse.private_messages != 0 {
+                            let (messagesResponse, error) = await withCheckedContinuation { continuation in
+                                lemmyApi.getMessages(page: 1, sort: LemmyApi.Sort.New, unread: true) { messages, error in
+                                    continuation.resume(returning: (messages, error))
+                                }.store(in: &cancellable)
+                            }
+                            guard let messagesResponse = messagesResponse else {
                                 return false
                             }
-                            if let messages = try? messagesResponse.content.decode(Messages.self).private_messages.filter({ $0.private_message.published > user.lastChecked }) {
-                                for message in messages {
-                                    _ = context.application.apns.send(
-                                        APNSwiftPayload(alert: .init(title: "New message from \(message.creator.name)", subtitle: message.private_message.content)),
-                                        to: user.deviceToken
-                                    )
-                                }
+                            let messages = messagesResponse.private_messages.filter { $0.private_message.published > user.lastChecked }
+                            for message in messages {
+                                _ = context.application.apns.send(
+                                    APNSwiftPayload(alert: .init(title: "New message from \(message.creator.name)", subtitle: message.private_message.content)),
+                                    to: user.deviceToken
+                                )
                             }
                         }
-                    default:
-                        return false
                     }
+
                     return true
                 }
             }
@@ -67,46 +77,4 @@ struct ReplyJob: AsyncScheduledJob {
         }
         print(Date.now)
     }
-}
-
-struct ErrorData: Codable {
-    let error: String
-}
-
-struct UnreadCount: Codable {
-    let replies: Int
-    let mentions: Int
-    let private_messages: Int
-}
-
-struct Replies: Codable {
-    let replies: [Reply]
-}
-
-struct Reply: Codable {
-    let comment: Comment
-    let creator: UserData
-}
-
-struct Comment: Codable {
-    let content: String
-    let published: Date
-}
-
-struct UserData: Codable {
-    let name: String
-}
-
-struct Messages: Codable {
-    let private_messages: [Message]
-}
-
-struct Message: Codable {
-    let creator: UserData
-    var private_message: MessageContent
-}
-
-struct MessageContent: Codable {
-    let content: String
-    let published: Date
 }

@@ -21,6 +21,8 @@ public func configure(_ app: Application) async throws {
     ), as: .psql)
 
     app.migrations.add(CreateUser())
+    
+    try app.redis.configuration = .init(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379")
 
     try app.queues.use(.redis(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379"))
 
@@ -54,16 +56,20 @@ public func configure(_ app: Application) async throws {
     app.queues.schedule(ReplyJob())
         .minutely()
         .at(0)
-    let pemData = Environment.get("PEM_DATA")
-    app.apns.configuration = try .init(
-        authenticationMethod: .jwt(
-            key: pemData == nil ? .private(filePath: "/tmp/test.p8") : .private(pem: pemData!),
-            keyIdentifier: "HZY22MR4SG",
-            teamIdentifier: "2GA3QKMF6Y"
-        ),
-        topic: "com.axlav.lemmios",
-        environment: app.environment == .development ? .sandbox : .production
-    )
+    
+    if app.environment.arguments.contains("queues") {
+        let pemData = Environment.get("PEM_DATA")
+        let pemPath = Environment.get("PEM_PATH")
+        app.apns.configuration = try .init(
+            authenticationMethod: .jwt(
+                key: pemData == nil ? .private(filePath: pemPath!) : .private(pem: pemData!),
+                keyIdentifier: "HZY22MR4SG",
+                teamIdentifier: "2GA3QKMF6Y"
+            ),
+            topic: "com.axlav.lemmios",
+            environment: app.environment == .development ? .sandbox : .production
+        )
+    }
 
     // register routes
     try routes(app)
