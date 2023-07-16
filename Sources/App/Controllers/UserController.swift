@@ -44,7 +44,6 @@ struct UserController: RouteCollection {
 
     func remove(req: Request) async throws -> HTTPStatus {
         let removePayload = try req.content.decode(RemovePayload.self)
-        print(removePayload.jwt)
         try await User.query(on: req.db)
             .filter(\.$id == removePayload.jwt)
             .delete()

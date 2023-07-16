@@ -11,10 +11,10 @@ struct ReplyJob: AsyncScheduledJob {
         try await User.query(on: context.application.db)
             .set(\.$lastChecked, to: .now)
             .update()
-        print(users.count)
+        context.application.logger.info("Checking replies for \(users.count) users")
         try await withThrowingTaskGroup(of: Bool.self) { group in
             for user in users {
-                print(user.username)
+                context.application.logger.info("Getting replies for \(user.username)")
                 group.addTask {
                     var cancellable = Set<AnyCancellable>()
                     let lemmyApi = try! LemmyApi(baseUrl: user.instance)
@@ -26,7 +26,7 @@ struct ReplyJob: AsyncScheduledJob {
                     }
                     if let error = error {
                         if case .lemmyError(let message, code: _) = error {
-                            print(error, message)
+                            context.application.logger.error("Failed to get replies for \(user.username) with error \(message)")
 //                            try await user.delete(on: context.application.db)
                         }
                     } else if let countResponse = countResponse {
@@ -75,6 +75,5 @@ struct ReplyJob: AsyncScheduledJob {
             }
             try await group.waitForAll()
         }
-        print(Date.now)
     }
 }

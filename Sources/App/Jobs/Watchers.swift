@@ -3,8 +3,8 @@ import CXShim
 import Foundation
 import LemmyApi
 import Queues
-import Vapor
 import Redis
+import Vapor
 
 let calendar = Calendar.current
 let dateComponents = DateComponents(hour: -24)
@@ -27,12 +27,12 @@ struct WatcherJob: AsyncScheduledJob {
                         }
                         if let error = error {
                             if case .lemmyError(let message, code: _) = error {
-                                print(error, message)
+                                context.application.logger.error("Failed to get community \(community.id!)@\(community.instance) with error \(message)")
                                 if message == "couldnt_find_community" {
                                     try await community.delete(on: context.application.db)
-                                    return false
                                 }
                             }
+                            return false
                         } else if let posts = posts {
                             for post in posts.posts {
                                 if post.counts.published < threshold {
@@ -59,15 +59,15 @@ struct WatcherJob: AsyncScheduledJob {
                             if post.counts.published < watcher.createdAt! {
                                 continue
                             }
-                            
+
                             if post.counts.score < watcher.upvotes {
                                 continue
                             }
-                            
+
                             if watcher.author != "" && watcher.author != post.creator.name {
                                 continue
                             }
-                            
+
                             let keywords = watcher.keywords.components(separatedBy: " ")
                             for keyword in keywords.filter({ $0 != "" }) {
                                 if !post.post.name.contains(keyword) {
@@ -79,9 +79,10 @@ struct WatcherJob: AsyncScheduledJob {
                                 APNSwiftPayload(alert: .init(title: "New watcher match in \(post.community.name)", subtitle: "\u{201c}\(post.post.name)\u{201d} by \(post.creator.name)", body: post.post.ap_id.absoluteString)),
                                 to: watcher.deviceToken
                             )
+                            return true
                         }
                     }
-                    return true
+                    return false
                 }
             }
             try await group.waitForAll()
