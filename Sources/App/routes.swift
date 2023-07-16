@@ -19,6 +19,7 @@ func routes(_ app: Application) throws {
     }
 
     try app.register(collection: UserController())
+    try app.register(collection: WatcherController())
 }
 
 struct InfoPayload: Codable {

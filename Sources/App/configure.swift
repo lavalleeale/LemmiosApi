@@ -21,6 +21,8 @@ public func configure(_ app: Application) async throws {
     ), as: .psql)
 
     app.migrations.add(CreateUser())
+    app.migrations.add(CreateCommunities())
+    app.migrations.add(CreateWatchers())
     
     try app.redis.configuration = .init(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379")
 
@@ -54,6 +56,10 @@ public func configure(_ app: Application) async throws {
     ContentConfiguration.global.use(decoder: decoder, for: .json)
 
     app.queues.schedule(ReplyJob())
+        .minutely()
+        .at(0)
+    
+    app.queues.schedule(WatcherJob())
         .minutely()
         .at(0)
     

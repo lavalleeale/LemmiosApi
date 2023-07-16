@@ -25,7 +25,7 @@ struct ReplyJob: AsyncScheduledJob {
                         }.store(in: &cancellable)
                     }
                     if let error = error {
-                        if case .lemmyError(let message) = error {
+                        if case .lemmyError(let message, code: _) = error {
                             print(error, message)
 //                            try await user.delete(on: context.application.db)
                         }
