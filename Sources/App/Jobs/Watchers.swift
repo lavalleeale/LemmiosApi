@@ -81,8 +81,8 @@ struct WatcherJob: AsyncScheduledJob {
                                 APNSwiftPayload(alert: .init(title: "New watcher match in \(post.community.name)", subtitle: "\u{201c}\(post.post.name)\u{201d} by \(post.creator.name)", body: post.post.ap_id.absoluteString)),
                                 to: watcher.deviceToken
                             )
-                            return true
                         }
+                        return true
                     }
                     return false
                 }
