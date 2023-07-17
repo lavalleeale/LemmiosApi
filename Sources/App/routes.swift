@@ -3,8 +3,6 @@ import Fluent
 import LemmyApi
 import Vapor
 
-var cancellable = Set<AnyCancellable>()
-
 func routes(_ app: Application) throws {
     app.get { _ async in
         "It works!"

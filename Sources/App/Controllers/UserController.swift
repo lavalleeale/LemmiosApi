@@ -2,6 +2,7 @@ import Foundation
 import Vapor
 import Fluent
 import LemmyApi
+import Combine
 
 struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
@@ -11,6 +12,7 @@ struct UserController: RouteCollection {
     }
 
     func register(req: Request) async throws -> HTTPStatus {
+        var cancellable = Set<AnyCancellable>()
         let registerPayload = try req.content.decode(RegisterPayload.self)
         guard let jwt = registerPayload.jwt.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
             return HTTPStatus.badRequest

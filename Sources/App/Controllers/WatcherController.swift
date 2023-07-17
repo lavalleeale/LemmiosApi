@@ -15,6 +15,7 @@ struct WatcherController: RouteCollection {
         try await Watcher.query(on: req.db)
             .filter(\.$id, .equal, deletePayload.id)
             .delete()
+        req.logger.info("Deteted watcher")
         return .ok
     }
     
@@ -39,6 +40,7 @@ struct WatcherController: RouteCollection {
             }
             let watcher = Watcher(deviceToken: watcherPayload.deviceToken, upvotes: watcherPayload.upvotes, author: watcherPayload.author, keywords: watcherPayload.keywords, communityId: community!.id!)
             try await watcher.create(on: req.db)
+            req.logger.info("Created watcher for \(watcherPayload.community)@\(watcherPayload.instance) for \(watcherPayload.deviceToken)")
             return watcher
         } else {
             if case let .lemmyError(message: message, code: _) = error {
