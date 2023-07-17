@@ -2,7 +2,7 @@ import Foundation
 import Vapor
 import Fluent
 import LemmyApi
-import Combine
+import CXShim
 
 struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
