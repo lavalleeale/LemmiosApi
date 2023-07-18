@@ -1,0 +1,17 @@
+{
+    "applinks": {
+        "details": [
+            {
+                "appIDs": [
+                    "2GA3QKMF6Y.com.axlav.lemmios"
+                ],
+                "components": [
+                    {
+                        "/": "/openinapp/*",
+                        "comment": "Matches any URL with a path that starts with /openinapp"
+                    }
+                ]
+            }
+        ]
+    }
+}
