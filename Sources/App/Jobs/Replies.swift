@@ -28,6 +28,8 @@ struct ReplyJob: AsyncScheduledJob {
                         if case .lemmyError(let message, code: _) = error {
                             context.application.logger.error("Failed to get replies for \(user.username) with error \(message)")
 //                            try await user.delete(on: context.application.db)
+                        } else {
+                            context.application.logger.error("Failed to get replies for \(user.username) with unknown error \(error)")
                         }
                     } else if let countResponse = countResponse {
                         let total = countResponse.replies + countResponse.private_messages
