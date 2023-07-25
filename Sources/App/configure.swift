@@ -55,13 +55,15 @@ public func configure(_ app: Application) async throws {
 
     ContentConfiguration.global.use(decoder: decoder, for: .json)
 
-    app.queues.schedule(ReplyJob())
+    app.queues.schedule(ReplySchedulerJob())
         .minutely()
         .at(0)
     
     app.queues.schedule(WatcherJob())
         .minutely()
         .at(0)
+    
+    app.queues.add(RepliesJob())
     
     if app.environment.arguments.contains("queues") {
         let pemData = Environment.get("PEM_DATA")
