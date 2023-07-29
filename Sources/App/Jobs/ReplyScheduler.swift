@@ -13,7 +13,7 @@ struct ReplySchedulerJob: AsyncScheduledJob {
             .update()
         context.application.logger.info("Checking replies for \(users.count) users")
         for user in users.enumerated() {
-            try await context.queue.dispatch(RepliesJob.self, user.element, delayUntil: Date.now + TimeInterval((user.offset % 3) * 15))
+            try await context.queue.dispatch(RepliesJob.self, user.element, delayUntil: Date.now + TimeInterval((user.offset % 50)))
         }
     }
 }
