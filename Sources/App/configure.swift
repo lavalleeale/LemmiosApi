@@ -65,6 +65,10 @@ public func configure(_ app: Application) async throws {
     
     app.queues.add(RepliesJob())
     
+    if let workers = Environment.get("QUEUE_WORKERS"), let workersNum = Int(workers) {
+        app.queues.configuration.workerCount = .custom(workersNum)
+    }
+    
     if app.environment.arguments.contains("queues") {
         let pemData = Environment.get("PEM_DATA")
         let pemPath = Environment.get("PEM_PATH")
