@@ -4,6 +4,7 @@ import FluentPostgresDriver
 import NIOSSL
 import QueuesRedisDriver
 import Vapor
+import Queues
 
 // configures your application
 public func configure(_ app: Application) async throws {
@@ -55,9 +56,7 @@ public func configure(_ app: Application) async throws {
 
     ContentConfiguration.global.use(decoder: decoder, for: .json)
 
-    app.queues.schedule(ReplySchedulerJob())
-        .minutely()
-        .at(0)
+    app.queues.scheduleEvery(ReplySchedulerJob(), minutes: 2)
     
     app.queues.schedule(WatcherJob())
         .minutely()
@@ -85,4 +84,12 @@ public func configure(_ app: Application) async throws {
 
     // register routes
     try routes(app)
+}
+
+extension Application.Queues {
+    func scheduleEvery(_ job: AsyncScheduledJob, minutes: Int) {
+        for minuteOffset in stride(from: 0, to: 60, by: minutes) {
+            schedule(job).hourly().at(.init(integerLiteral: minuteOffset))
+        }
+    }
 }
