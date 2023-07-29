@@ -18,7 +18,7 @@ struct WatcherJob: AsyncScheduledJob {
                 group.addTask {
                     var cancellable = Set<AnyCancellable>()
                     let lemmyApi = try! LemmyApi(baseUrl: community.instance)
-                    var allPosts = Set<LemmyApi.ApiPost>()
+                    var allPosts = Set<LemmyApi.PostView>()
                     for page in 1 ... 5 {
                         let (posts, error) = await withCheckedContinuation { continuation in
                             lemmyApi.getPosts(id: community.localId, page: page, sort: .New, time: .All, limit: 50) { posts, error in

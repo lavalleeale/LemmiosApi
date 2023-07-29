@@ -26,7 +26,7 @@ struct UserController: RouteCollection {
                 continuation.resume(returning: (siteInfo, error))
             }.store(in: &cancellable)
         }
-        if let person = response?.my_user?.local_user_view.person {
+        if let person = response?.my_user?.local_user_view?.person {
             do {
                 try await User(deviceToken: registerPayload.deviceToken, jwt: jwt, username: person.name, instance: registerPayload.instance, lastChecked: .now).create(on: req.db)
                 req.logger.info("Registered \(person.actor_id)")

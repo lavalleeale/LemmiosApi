@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/fluent-kit.git",
       "state" : {
-        "revision" : "763627fbb81f3fdcf5d38db15afae41d7926eee3",
-        "version" : "1.43.0"
+        "revision" : "46ea401fb74ae48a433d991ff67f9fdae379f7e5",
+        "version" : "1.43.2"
       }
     },
     {
@@ -95,8 +95,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/jwt-kit.git",
       "state" : {
-        "revision" : "dd3fe317f826d43bcefbe20d86f0f787927d05d8",
-        "version" : "4.12.0"
+        "revision" : "9e929d925434b91857661bcd455d1bd53f00bf22",
+        "version" : "4.13.0"
       }
     },
     {
@@ -105,7 +105,7 @@
       "location" : "https://github.com/lavalleeale/LemmyApi.git",
       "state" : {
         "branch" : "main",
-        "revision" : "6562b2d945df8b81c5c15f69ce1dc263b20c861b"
+        "revision" : "b35a5f44c6d1cc1cad4b1b60a163aae6ece29128"
       }
     },
     {
@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/postgres-kit.git",
       "state" : {
-        "revision" : "b69f427924b00718e8190701e4f410e9c0823770",
-        "version" : "2.11.4"
+        "revision" : "e0f6bc99d9fe3125dec75bb243b362f80bdaaa41",
+        "version" : "2.12.0"
       }
     },
     {
@@ -131,8 +131,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/postgres-nio.git",
       "state" : {
-        "revision" : "061a0836d7c1887e04a975d1d2eaa2ef5fd7dfab",
-        "version" : "1.16.0"
+        "revision" : "aa9273c06a0f42281635eaf0400aa024157c8fa9",
+        "version" : "1.17.0"
       }
     },
     {
@@ -167,8 +167,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swift-server/RediStack.git",
       "state" : {
-        "revision" : "43d94452a8be6ebebb07ec7bcf4e6f19888e1251",
-        "version" : "1.4.1"
+        "revision" : "43ea6af8623cb4b93c41719a3cbf9af6439d8b10",
+        "version" : "1.5.0"
       }
     },
     {
@@ -257,8 +257,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-nio.git",
       "state" : {
-        "revision" : "5f542894dd8efbd766d8adf73ef2f947b0cd5e21",
-        "version" : "2.56.0"
+        "revision" : "a2e487b77f17edbce9a65f2b7415f2f479dc8e48",
+        "version" : "2.57.0"
       }
     },
     {
@@ -311,8 +311,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/vapor.git",
       "state" : {
-        "revision" : "1baf62327cc55f55a0767c3a9414dec8ebfdff96",
-        "version" : "4.77.1"
+        "revision" : "e98077ddd1e3535bea6c9514f99d57463816c3bd",
+        "version" : "4.77.2"
       }
     },
     {
