@@ -66,7 +66,7 @@ public func configure(_ app: Application) async throws {
     app.queues.add(RepliesJob())
     
     if let workers = Environment.get("QUEUE_WORKERS"), let workersNum = Int(workers) {
-        app.redis.configuration?.pool.maximumConnectionCount = .maximumActiveConnections(workersNum)
+        app.redis.configuration?.pool.maximumConnectionCount = .maximumPreservedConnections(workersNum)
         app.queues.configuration.workerCount = .custom(workersNum)
     }
     
