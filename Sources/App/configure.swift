@@ -56,7 +56,7 @@ public func configure(_ app: Application) async throws {
 
     ContentConfiguration.global.use(decoder: decoder, for: .json)
 
-    app.queues.scheduleEvery(ReplySchedulerJob(), minutes: 2)
+    app.queues.scheduleEvery(ReplySchedulerJob(), minutes: 10)
     
     app.queues.schedule(WatcherJob())
         .minutely()
