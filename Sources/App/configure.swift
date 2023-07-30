@@ -55,6 +55,7 @@ public func configure(_ app: Application) async throws {
     }
 
     ContentConfiguration.global.use(decoder: decoder, for: .json)
+    
 
     app.queues.scheduleEvery(ReplySchedulerJob(), minutes: 10)
     
@@ -65,6 +66,7 @@ public func configure(_ app: Application) async throws {
     app.queues.add(RepliesJob())
     
     if let workers = Environment.get("QUEUE_WORKERS"), let workersNum = Int(workers) {
+        app.redis.configuration?.pool.maximumConnectionCount = .maximumActiveConnections(workersNum)
         app.queues.configuration.workerCount = .custom(workersNum)
     }
     
