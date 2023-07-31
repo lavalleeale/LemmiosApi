@@ -16,7 +16,12 @@ struct ReplySchedulerJob: AsyncScheduledJob {
                 context.application.logger.info("Checking replies for \(instance.value.count) users in \(instance.key)")
                 let maxOffset = instance.value.count
                 for user in instance.value.enumerated() {
-                    try await context.queue.dispatch(RepliesJob.self, user.element, delayUntil: Date.now + TimeInterval(user.offset % maxOffset) * 570.0 / Double(maxOffset))
+                    let targetTime = Date.now + TimeInterval(user.offset % maxOffset) * 570.0 / Double(maxOffset)
+                    try await context.queue.dispatch(
+                        RepliesJob.self, user.element,
+                        delayUntil: targetTime,
+                        id: JobIdentifier(string: "\(user.element.username)@\(user.element.instance)@\(targetTime)")
+                    )
                 }
             }
         }
