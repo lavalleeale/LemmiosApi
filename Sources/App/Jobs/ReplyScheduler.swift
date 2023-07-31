@@ -11,11 +11,13 @@ struct ReplySchedulerJob: AsyncScheduledJob {
         try await User.query(on: context.application.db)
             .set(\.$lastChecked, to: .now)
             .update()
-        context.application.logger.info("Checking replies for \(users.count) users")
-        let maxOffset = users.count
-        for user in users.enumerated() {
-            if Environment.get("SKIP_INSTANCES")?.contains(user.element.instance) != true {
-                try await context.queue.dispatch(RepliesJob.self, user.element, delayUntil: Date.now + TimeInterval(user.offset % maxOffset) * 530.0 / Double(maxOffset))
+        for instance in Dictionary(grouping: users, by: {$0.instance}) {
+            if Environment.get("SKIP_INSTANCES")?.contains(instance.key) != true {
+                context.application.logger.info("Checking replies for \(instance.value.count) users in \(instance.key)")
+                let maxOffset = instance.value.count
+                for user in instance.value.enumerated() {
+                    try await context.queue.dispatch(RepliesJob.self, user.element, delayUntil: Date.now + TimeInterval(user.offset % maxOffset) * 570.0 / Double(maxOffset))
+                }
             }
         }
     }
