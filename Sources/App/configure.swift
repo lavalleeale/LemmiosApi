@@ -76,22 +76,6 @@ public func configure(_ app: Application) async throws {
 
     ContentConfiguration.global.use(decoder: decoder, for: .json)
     
-    
-    app.config = Config(reply_timeout: Int(Environment.get("REPLY_TIMEOUT") ?? "5") ?? 5, reply_poll: Int(Environment.get("REPLY_POLL") ?? "10") ?? 10)
-    
-    app.queues.scheduleEvery(ReplySchedulerJob(), minutes: app.config?.reply_poll ?? 10)
-    
-    app.queues.schedule(WatcherJob())
-        .minutely()
-        .at(0)
-    
-    app.queues.add(RepliesJob())
-    
-    if let workers = Environment.get("QUEUE_WORKERS"), let workersNum = Int(workers) {
-        app.redis.configuration?.pool.maximumConnectionCount = .maximumPreservedConnections(workersNum)
-        app.queues.configuration.workerCount = .custom(workersNum)
-    }
-    
     if app.environment.arguments.contains("queues") {
         let pemData = Environment.get("PEM_DATA")
         let pemPath = Environment.get("PEM_PATH")
@@ -108,6 +92,22 @@ public func configure(_ app: Application) async throws {
 
     // register routes
     try routes(app)
+    
+    if let workers = Environment.get("QUEUE_WORKERS"), let workersNum = Int(workers) {
+        app.redis.configuration?.pool.maximumConnectionCount = .maximumPreservedConnections(workersNum)
+        app.redis.configuration?.pool.minimumConnectionCount = workersNum
+        app.queues.configuration.workerCount = .custom(workersNum)
+    }
+    
+    app.config = Config(reply_timeout: Int(Environment.get("REPLY_TIMEOUT") ?? "5") ?? 5, reply_poll: Int(Environment.get("REPLY_POLL") ?? "10") ?? 10)
+    
+    app.queues.scheduleEvery(ReplySchedulerJob(), minutes: app.config?.reply_poll ?? 10)
+    
+    app.queues.schedule(WatcherJob())
+        .minutely()
+        .at(0)
+    
+    app.queues.add(RepliesJob())
 }
 
 extension Application.Queues {
