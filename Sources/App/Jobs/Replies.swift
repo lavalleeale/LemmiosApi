@@ -74,7 +74,7 @@ struct RepliesJob: AsyncJob {
 
         let timeoutTask = Task {
             let timeout = context.application.config?.reply_timeout ?? 5
-            try await Task.sleep(nanoseconds: UInt64(timeout) * NSEC_PER_SEC)
+            try await Task.sleep(nanoseconds: UInt64(timeout) * 1_000_000_000)
             getRepliesTask.cancel()
         }
 
