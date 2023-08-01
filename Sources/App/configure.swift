@@ -94,8 +94,8 @@ public func configure(_ app: Application) async throws {
     try routes(app)
     
     if let workers = Environment.get("QUEUE_WORKERS"), let workersNum = Int(workers) {
-        app.redis.configuration?.pool.maximumConnectionCount = .maximumPreservedConnections(workersNum)
-        app.redis.configuration?.pool.minimumConnectionCount = workersNum
+        app.redis.configuration?.pool.maximumConnectionCount = .maximumPreservedConnections(workersNum * 2)
+        app.redis.configuration?.pool.minimumConnectionCount = workersNum * 2
         app.queues.configuration.workerCount = .custom(workersNum)
     }
     
