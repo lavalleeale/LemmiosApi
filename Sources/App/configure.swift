@@ -94,8 +94,8 @@ public func configure(_ app: Application) async throws {
     if let workers = Environment.get("QUEUE_WORKERS"), let workersNum = Int(workers) {
         app.redis.configuration?.pool.maximumConnectionCount = .maximumPreservedConnections(workersNum * 2)
         app.redis.configuration?.pool.minimumConnectionCount = workersNum * 2
-        app.queues.configuration.workerCount = .custom(workersNum)
         try app.queues.use(.redis(.init(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379", pool: .init(maximumConnectionCount: .maximumPreservedConnections(workersNum * 2), minimumConnectionCount: workersNum * 2))))
+        app.queues.configuration.workerCount = .custom(workersNum)
     } else {
         try app.queues.use(.redis(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379"))
     }

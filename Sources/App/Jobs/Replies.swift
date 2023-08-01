@@ -80,5 +80,9 @@ struct RepliesJob: AsyncJob {
 
         await getRepliesTask.value
         timeoutTask.cancel()
+        try await User.query(on: context.application.db)
+            .filter(\.$id, .equal, payload.id!)
+            .set(\.$lastChecked, to: .now)
+            .update()
     }
 }
