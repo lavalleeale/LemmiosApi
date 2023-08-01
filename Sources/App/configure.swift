@@ -47,8 +47,6 @@ public func configure(_ app: Application) async throws {
     
     try app.redis.configuration = .init(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379")
 
-    try app.queues.use(.redis(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379"))
-
     let decoder = JSONDecoder()
     let formatter1 = DateFormatter()
     formatter1.locale = Locale(identifier: "en_US_POSIX")
@@ -97,9 +95,13 @@ public func configure(_ app: Application) async throws {
         app.redis.configuration?.pool.maximumConnectionCount = .maximumPreservedConnections(workersNum * 2)
         app.redis.configuration?.pool.minimumConnectionCount = workersNum * 2
         app.queues.configuration.workerCount = .custom(workersNum)
+        try app.queues.use(.redis(.init(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379", pool: .init(maximumConnectionCount: .maximumPreservedConnections(workersNum * 2), minimumConnectionCount: workersNum * 2))))
+    } else {
+        try app.queues.use(.redis(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379"))
     }
     
     app.config = Config(reply_timeout: Int(Environment.get("REPLY_TIMEOUT") ?? "5") ?? 5, reply_poll: Int(Environment.get("REPLY_POLL") ?? "10") ?? 10)
+    
     
     app.queues.scheduleEvery(ReplySchedulerJob(), minutes: app.config?.reply_poll ?? 10)
     
