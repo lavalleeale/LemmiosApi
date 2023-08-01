@@ -6,6 +6,26 @@ import QueuesRedisDriver
 import Vapor
 import Queues
 
+struct Config {
+    var reply_timeout: Int
+    var reply_poll: Int
+}
+
+struct ConfigKey: StorageKey {
+    typealias Value = Config
+}
+
+extension Application {
+    var config: Config? {
+        get {
+            self.storage[ConfigKey.self]
+        }
+        set {
+            self.storage[ConfigKey.self] = newValue
+        }
+    }
+}
+
 // configures your application
 public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
@@ -56,8 +76,10 @@ public func configure(_ app: Application) async throws {
 
     ContentConfiguration.global.use(decoder: decoder, for: .json)
     
-
-    app.queues.scheduleEvery(ReplySchedulerJob(), minutes: 10)
+    
+    app.config = Config(reply_timeout: Int(Environment.get("REPLY_TIMEOUT") ?? "5") ?? 5, reply_poll: Int(Environment.get("REPLY_POLL") ?? "10") ?? 10)
+    
+    app.queues.scheduleEvery(ReplySchedulerJob(), minutes: app.config?.reply_poll ?? 10)
     
     app.queues.schedule(WatcherJob())
         .minutely()

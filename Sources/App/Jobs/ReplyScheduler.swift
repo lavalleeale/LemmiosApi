@@ -7,6 +7,7 @@ import Vapor
 
 struct ReplySchedulerJob: AsyncScheduledJob {
     func run(context: QueueContext) async throws {
+        let totalTime = Double(context.application.config?.reply_poll ?? 10) * 60 - 30
         let users = try await User.query(on: context.application.db).all()
         try await User.query(on: context.application.db)
             .set(\.$lastChecked, to: .now)
@@ -16,7 +17,7 @@ struct ReplySchedulerJob: AsyncScheduledJob {
                 context.application.logger.info("Checking replies for \(instance.value.count) users in \(instance.key)")
                 let maxOffset = instance.value.count
                 for user in instance.value.enumerated() {
-                    let targetTime = Date.now + TimeInterval(user.offset % maxOffset) * 570.0 / Double(maxOffset)
+                    let targetTime = Date.now + TimeInterval(user.offset % maxOffset) * totalTime / Double(maxOffset)
                     try await context.queue.dispatch(
                         RepliesJob.self, user.element,
                         delayUntil: targetTime,
