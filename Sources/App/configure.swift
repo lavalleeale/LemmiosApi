@@ -105,11 +105,11 @@ public func configure(_ app: Application) async throws {
     
     app.queues.scheduleEvery(ReplySchedulerJob(), minutes: app.config?.reply_poll ?? 10)
     
-    app.queues.schedule(WatcherJob())
-        .minutely()
-        .at(0)
+    app.queues.scheduleEvery(WatcherSchedulerJob(), minutes: app.config?.reply_poll ?? 10)
     
     app.queues.add(RepliesJob())
+    
+    app.queues.add(WatchersJob())
 }
 
 extension Application.Queues {

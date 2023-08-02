@@ -10,7 +10,6 @@ struct RepliesJob: AsyncJob {
 
     func dequeue(_ context: Queues.QueueContext, _ payload: User) async throws {
         let getRepliesTask = Task {
-            context.application.logger.info("Getting replies for \(payload.username)")
             var cancellable = Set<AnyCancellable>()
             let lemmyApi = try! LemmyApi(baseUrl: payload.instance)
             lemmyApi.setJwt(jwt: payload.id!)
