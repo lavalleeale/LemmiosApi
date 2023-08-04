@@ -77,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/fluent-kit.git",
       "state" : {
-        "revision" : "46ea401fb74ae48a433d991ff67f9fdae379f7e5",
-        "version" : "1.43.2"
+        "revision" : "e562a1015a814d42582cbccd3e58f03187d6718c",
+        "version" : "1.44.0"
       }
     },
     {
@@ -105,7 +105,7 @@
       "location" : "https://github.com/lavalleeale/LemmyApi.git",
       "state" : {
         "branch" : "main",
-        "revision" : "b35a5f44c6d1cc1cad4b1b60a163aae6ece29128"
+        "revision" : "7096592ab7202c705cfb2232a7c5d1464ac34e67"
       }
     },
     {
@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/queues.git",
       "state" : {
-        "revision" : "f1adaf4c925eb7074a4acf363172c1fa6ec888c8",
-        "version" : "1.12.1"
+        "revision" : "3dc80954c672effa188d01a15f56bf358c34beac",
+        "version" : "1.13.0"
       }
     },
     {
@@ -167,8 +167,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swift-server/RediStack.git",
       "state" : {
-        "revision" : "43ea6af8623cb4b93c41719a3cbf9af6439d8b10",
-        "version" : "1.5.0"
+        "revision" : "30a43b019569625d2d9972c4fe89e06dbdc09e64",
+        "version" : "1.5.1"
       }
     },
     {
@@ -311,8 +311,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/vapor.git",
       "state" : {
-        "revision" : "e98077ddd1e3535bea6c9514f99d57463816c3bd",
-        "version" : "4.77.2"
+        "revision" : "6b96684e150d3b3afcd53df12fe66e6bd9b67a04",
+        "version" : "4.78.0"
       }
     },
     {

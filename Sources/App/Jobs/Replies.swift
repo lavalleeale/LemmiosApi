@@ -44,8 +44,9 @@ struct RepliesJob: AsyncJob {
                     }
                     let replies = repliesResponse.replies.filter { $0.counts.published > payload.lastChecked }
                     for reply in replies {
+                        let notificationPayload = APNSwiftPayload(alert: .init(title: "New reply from \(reply.creator.name)", subtitle: reply.comment.content))
                         _ = context.application.apns.send(
-                            APNSwiftPayload(alert: .init(title: "New reply from \(reply.creator.name)", subtitle: reply.comment.content)),
+                            Notification(aps: notificationPayload, url: reply.comment.ap_id),
                             to: payload.deviceToken
                         )
                     }
@@ -61,8 +62,9 @@ struct RepliesJob: AsyncJob {
                     }
                     let messages = messagesResponse.private_messages.filter { $0.private_message.published > payload.lastChecked }
                     for message in messages {
+                        let notificationPayload = APNSwiftPayload(alert: .init(title: "New message from \(message.creator.name)", subtitle: message.private_message.content))
                         _ = context.application.apns.send(
-                            APNSwiftPayload(alert: .init(title: "New message from \(message.creator.name)", subtitle: message.private_message.content)),
+                            Notification(aps: notificationPayload, url: message.private_message.ap_id),
                             to: payload.deviceToken,
                             loggerConfig: .none
                         )
@@ -84,4 +86,9 @@ struct RepliesJob: AsyncJob {
             .set(\.$lastChecked, to: .now)
             .update()
     }
+}
+
+struct Notification: APNSwiftNotification {
+    let aps: APNSwift.APNSwiftPayload
+    let url: URL
 }

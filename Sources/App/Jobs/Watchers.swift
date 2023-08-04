@@ -74,8 +74,9 @@ struct WatchersJob: AsyncJob {
                 watcher.hits += 1
                 try await watcher.update(on: context.application.db)
                 try await context.application.redis.setex(redisKey, toJSON: "", expirationInSeconds: 24 * 60 * 60)
+                let notificationPayload = APNSwiftPayload(alert: .init(title: "New watcher match in \(post.community.name)", subtitle: "\u{201c}\(post.post.name)\u{201d} by \(post.creator.name)", body: post.post.ap_id.absoluteString))
                 _ = context.application.apns.send(
-                    APNSwiftPayload(alert: .init(title: "New watcher match in \(post.community.name)", subtitle: "\u{201c}\(post.post.name)\u{201d} by \(post.creator.name)", body: post.post.ap_id.absoluteString)),
+                    Notification(aps: notificationPayload, url: post.post.ap_id),
                     to: watcher.deviceToken
                 )
             }
