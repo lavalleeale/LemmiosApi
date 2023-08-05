@@ -2,7 +2,7 @@ import Fluent
 
 struct CreateCommunities: AsyncMigration {
     func prepare(on database: Database) async throws {
-        try await database.schema("communities")
+        try await database.schema(Community.schema)
             .id()
             .field("instance", .string, .required)
             .field("localId", .int32, .required)
@@ -12,6 +12,6 @@ struct CreateCommunities: AsyncMigration {
     }
 
     func revert(on database: Database) async throws {
-        try await database.schema("communities").delete()
+        try await database.schema(Community.schema).delete()
     }
 }

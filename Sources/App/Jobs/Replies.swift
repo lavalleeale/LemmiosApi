@@ -3,6 +3,7 @@ import CXShim
 import Foundation
 import LemmyApi
 import Queues
+import RediStack
 import Vapor
 
 struct RepliesJob: AsyncJob {
@@ -28,10 +29,14 @@ struct RepliesJob: AsyncJob {
             } else if let countResponse = countResponse {
                 let total = countResponse.replies + countResponse.private_messages
                 if total != 0 {
+                    let key = RedisKey(rawValue: "device:\(payload.$device.id)")!
+                    let previousBadge = try await context.application.redis.get(key, asJSON: Int.self) ?? 0
+                    let notifCount = previousBadge + total
                     _ = context.application.apns.send(
-                        APNSwiftPayload(badge: total),
-                        to: payload.deviceToken
+                        APNSwiftPayload(badge: notifCount),
+                        to: payload.$device.id
                     )
+                    try await context.application.redis.setex(key, toJSON: notifCount, expirationInSeconds: 15 * 60)
                 }
                 if countResponse.replies != 0 {
                     let (repliesResponse, error) = await withCheckedContinuation { continuation in
@@ -47,7 +52,7 @@ struct RepliesJob: AsyncJob {
                         let notificationPayload = APNSwiftPayload(alert: .init(title: "New reply from \(reply.creator.name)", subtitle: reply.comment.content))
                         _ = context.application.apns.send(
                             Notification(aps: notificationPayload, url: reply.comment.ap_id),
-                            to: payload.deviceToken
+                            to: payload.$device.id
                         )
                     }
                 }
@@ -65,7 +70,7 @@ struct RepliesJob: AsyncJob {
                         let notificationPayload = APNSwiftPayload(alert: .init(title: "New message from \(message.creator.name)", subtitle: message.private_message.content))
                         _ = context.application.apns.send(
                             Notification(aps: notificationPayload, url: message.private_message.ap_id),
-                            to: payload.deviceToken,
+                            to: payload.$device.id,
                             loggerConfig: .none
                         )
                     }
@@ -79,7 +84,7 @@ struct RepliesJob: AsyncJob {
             getRepliesTask.cancel()
         }
 
-        await getRepliesTask.value
+        try await getRepliesTask.value
         timeoutTask.cancel()
         try await User.query(on: context.application.db)
             .filter(\.$id, .equal, payload.id!)

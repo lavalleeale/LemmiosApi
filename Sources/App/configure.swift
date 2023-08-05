@@ -44,6 +44,7 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateUser())
     app.migrations.add(CreateCommunities())
     app.migrations.add(CreateWatchers())
+    app.migrations.add(CreateDevices())
     
     try app.redis.configuration = .init(url: Environment.get("REDIS_HOST") ?? "redis://127.0.0.1:6379")
 

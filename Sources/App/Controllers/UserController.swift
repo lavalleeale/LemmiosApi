@@ -28,13 +28,14 @@ struct UserController: RouteCollection {
         }
         if let person = response?.my_user?.local_user_view?.person {
             do {
+                try? await Device(deviceToken: registerPayload.deviceToken).create(on: req.db)
                 try await User(deviceToken: registerPayload.deviceToken, jwt: jwt, username: person.name, instance: registerPayload.instance, lastChecked: .now).create(on: req.db)
                 req.logger.info("Registered \(person.actor_id)")
             } catch {
                 try await User.query(on: req.db)
                     .set(\.$id, to: jwt)
                     .filter(\.$username == person.name)
-                    .filter(\.$deviceToken == registerPayload.deviceToken)
+                    .filter(\.$device.$id == registerPayload.deviceToken)
                     .filter(\.$instance == registerPayload.instance)
                     .update()
                 req.logger.info("Updated \(person.actor_id)")

@@ -10,8 +10,8 @@ final class User: Fields, Model, Content {
     @Field(key: "username")
     var username: String
 
-    @Field(key: "deviceToken")
-    var deviceToken: String
+    @Parent(key: "deviceToken")
+    var device: Device
     
     @Field(key: "instance")
     var instance: String
@@ -23,7 +23,7 @@ final class User: Fields, Model, Content {
 
     init(deviceToken: String, jwt: String, username: String, instance: String, lastChecked: Date) {
         self.id = jwt
-        self.deviceToken = deviceToken
+        self.$device.id = deviceToken
         self.username = username
         self.instance = instance
         self.lastChecked = lastChecked

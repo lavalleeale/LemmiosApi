@@ -2,7 +2,7 @@ import Fluent
 
 struct CreateWatchers: AsyncMigration {
     func prepare(on database: Database) async throws {
-        try await database.schema("watchers")
+        try await database.schema(Watcher.schema)
             .id()
             .field("community_id", .uuid, .required, .references("communities", "id"))
             .field("deviceToken", .string, .required)
@@ -15,6 +15,6 @@ struct CreateWatchers: AsyncMigration {
     }
 
     func revert(on database: Database) async throws {
-        try await database.schema("watchers").delete()
+        try await database.schema(Watcher.schema).delete()
     }
 }
