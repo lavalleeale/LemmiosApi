@@ -43,7 +43,7 @@ struct WatchersJob: AsyncJob {
             }
         }
         for post in allPosts {
-            watcherLoop: for watcher in community.watchers {
+        watcherLoop: for watcher in try await community.$watchers.get(on: context.application.db) {
                 let redisKey = RedisKey("\(watcher.id):\(post.post.id)")
                 do {
                     let newValue = try await context.application.redis.get(redisKey, asJSON: String.self)
