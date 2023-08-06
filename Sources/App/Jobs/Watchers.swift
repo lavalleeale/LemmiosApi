@@ -12,6 +12,9 @@ let dateComponents = DateComponents(hour: -24)
 struct WatchersJob: AsyncJob {
     typealias Payload = Community
     func dequeue(_ context: Queues.QueueContext, _ community: Community) async throws {
+        guard let community = try await Community.query(on: context.application.db).with(\.$watchers).filter(\.$id, .equal, community.id!).first() else {
+            return
+        }
         let threshold = calendar.date(byAdding: dateComponents, to: Date.now)!
         var cancellable = Set<AnyCancellable>()
         let lemmyApi = try! LemmyApi(baseUrl: community.instance)
