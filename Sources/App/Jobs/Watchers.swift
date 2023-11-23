@@ -19,11 +19,18 @@ struct WatchersJob: AsyncJob {
         var cancellable = Set<AnyCancellable>()
         let lemmyApi = try! LemmyApi(baseUrl: community.instance)
         var allPosts = Set<LemmyApi.PostView>()
+        var nextPage: String?
         for page in 1 ... 5 {
             let (posts, error) = await withCheckedContinuation { continuation in
-                lemmyApi.getPosts(id: community.localId, page: page, sort: .New, time: .All, limit: 50) { posts, error in
-                    continuation.resume(returning: (posts, error))
-                }.store(in: &cancellable)
+                if let page = nextPage {
+                    lemmyApi.getPosts(id: community.localId, pageCursor: page, sort: .New, time: .All, limit: 50) { posts, error in
+                        continuation.resume(returning: (posts, error))
+                    }.store(in: &cancellable)
+                } else {
+                    lemmyApi.getPosts(id: community.localId, page: page, sort: .New, time: .All, limit: 50) { posts, error in
+                        continuation.resume(returning: (posts, error))
+                    }.store(in: &cancellable)
+                }
             }
             if let error = error {
                 if case .lemmyError(let message, code: _) = error {
@@ -34,6 +41,9 @@ struct WatchersJob: AsyncJob {
                 }
                 return
             } else if let posts = posts {
+                if let page = posts.next_page {
+                    nextPage = page
+                }
                 for post in posts.posts {
                     if post.counts.published < threshold {
                         break
