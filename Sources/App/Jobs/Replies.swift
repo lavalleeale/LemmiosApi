@@ -21,8 +21,12 @@ struct RepliesJob: AsyncJob {
             }
             if let error = error {
                 if case .lemmyError(let message, code: _) = error {
-                    context.application.logger.error("Failed to get replies for \(payload.username) with error \(message)")
-//                    try await user.delete(on: context.application.db)
+                    if message == "deleted" {
+                        try await payload.delete(on: context.application.db)
+                        context.application.logger.error("Deleted user \(payload.username) because of error \(message)")
+                    } else {
+                        context.application.logger.error("Failed to get replies for \(payload.username) with error \(message)")
+                    }
                 } else {
                     context.application.logger.error("Failed to get replies for \(payload.username) with unknown error \(error)")
                 }
